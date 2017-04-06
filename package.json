@@ -1,0 +1,12 @@
+{
+  "name": "WindowUndertaker",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "start": "node ./bin/www"
+  },
+  "dependencies": {
+    "express": "~4.15.2",  
+    "socket.io": "1.7.3"
+  }
+}

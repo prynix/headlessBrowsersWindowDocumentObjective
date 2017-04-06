@@ -1,0 +1,80 @@
+#!/usr/bin/env node
+var app = require('../app')
+  , debug = require('debug')('4-windowdocumentobjects:server')
+  , http = require('http')
+  , util = require('util')
+  , fs = require('fs')
+  , browser = { window: {}, document: {} }
+  , counter = 0
+  , port = normalizePort(process.env.PORT || '3000');
+app.set('port', port);
+var server = http.createServer(app);
+
+
+
+
+
+
+server.listen(port, () => console.log(`WINDOW & DOCUMENT`));
+io = require('socket.io').listen(server);
+server.on('error', onError);
+server.on('listening', onListening);
+io.set('log level', 1);
+
+io.sockets.on('connection', function (socket) {
+  socket.on('browser', (browser) => {
+    counter++;
+    fs.writeFile('browsers/window-' + counter + '.js', 'module.exports=' + util.inspect(browser.synteticWindow, false, 20, false, 99999), (err) => {
+      if (err) return console.error(err);
+      console.log('I/O  synteticWindow ', counter);
+    });
+    fs.writeFile('browsers/document-' + counter + '.js', 'module.exports=' + util.inspect(browser.synteticDocument, false, 20, false, 99999), (err) => {
+      if (err) return console.error(err);
+      console.log('I/O  synteticDocument ', counter);
+    });
+  });
+});
+
+
+
+
+
+
+
+function normalizePort(val) {
+  var port = parseInt(val, 10);
+  if (isNaN(port)) {
+    return val;
+  }
+  if (port >= 0) {
+    return port;
+  }
+  return false;
+}
+function onError(error) {
+  if (error.syscall !== 'listen') {
+    throw error;
+  }
+  var bind = typeof port === 'string'
+    ? 'Pipe ' + port
+    : 'Port ' + port;
+  switch (error.code) {
+    case 'EACCES':
+      console.error(bind + ' requires elevated privileges');
+      process.exit(1);
+      break;
+    case 'EADDRINUSE':
+      console.error(bind + ' is already in use');
+      process.exit(1);
+      break;
+    default:
+      throw error;
+  }
+}
+function onListening() {
+  var addr = server.address();
+  var bind = typeof addr === 'string'
+    ? 'pipe ' + addr
+    : 'port ' + addr.port;
+  debug('Listening on ' + bind);
+}

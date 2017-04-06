@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+      <meta charset="UTF-8">
+      <title>666</title>
+      <!--script src='https://code.jquery.com/jquery-3.2.0.min.js'></scrip-->
+      <script type='text/javascript ' src="/socket.io/socket.io.js"></script>
+</head>
+<body style="background: blanchedalmond;" ></body>
+<script>    
+      `use strict;`
+      var synteticWindow = {}, windowPropertiesStorage = [], synteticDocument = {}, documentPropertiesStorage = [];
+      _window = () => {
+            for (let prop in window) {
+                  windowPropertiesStorage.push(prop);
+            }
+            for (let i = 0; i < windowPropertiesStorage.length; i += 1) {
+                  let step = window[windowPropertiesStorage[i]];
+                  synteticWindow[windowPropertiesStorage[i]] = inspect(step);
+            }
+      }
+      _document = () => {
+            for (let prop in document) {
+                  documentPropertiesStorage.push(prop);
+            }
+            for (let i = 0; i < documentPropertiesStorage.length; i += 1) {
+                  let step = document[documentPropertiesStorage[i]];
+                  synteticDocument[documentPropertiesStorage[i]] = inspect(step);
+            }
+      }
+      function inspect(windowPropierty) {
+            let synteticWindowPropierty = {}, loop = 0;
+            const deep = 2;
+            for (let prop in windowPropierty) {
+                  if (/document |self|window|synteticWindow|synteticDocument/.exec(prop)) { return; }
+                  let value = windowPropierty[prop], type = typeof value, isArray = Array.isArray(value);
+                  switch (type) {
+                        case 'number':
+                              synteticWindowPropierty[prop] = value;
+                              break;
+                        case 'boolean':
+                              synteticWindowPropierty[prop] = value;
+                              break;
+                        case null:
+                              synteticWindowPropierty[prop] = "null";
+                              break;
+                        case undefined:
+                              synteticWindowPropierty[prop] = "undefined";
+                              break;
+                        case "function":
+                              //synteticWindowPropierty[prop] = new Function('', 'return ' + value + '');
+                              synteticWindowPropierty[prop] = String(value);
+                              break;
+                        case "object":
+                              if (isArray) {
+                                    //console.info(`isArray`, value);
+                                    let synteticArray = [];
+                                    for (let a = 0; a < value.length; a += 1) {
+                                          synteticArray[a] = inspect(value[a]);
+                                    }
+                                    synteticWindowPropierty[prop] = synteticArray;
+                                    break;
+                              } else {
+                                    if (loop >= deep) {  break; }
+                                    let synteticObject = {};
+                                    for (let propierty in value) {
+                                          if (value.hasOwnProperty(propierty)) synteticObject[propierty] = inspect(value);
+                                    }
+                                    synteticWindowPropierty[prop] = synteticObject;
+                                    loop++;
+                                    break;
+                              }
+                        default:
+                              synteticWindowPropierty[prop] = String(value);
+                              break;
+                  }
+            }
+            return synteticWindowPropierty;
+      }
+      _window();
+      _document();
+      //delete synteticWindow.synteticWindow;
+      //delete synteticWindow.windowPropertiesStorage;
+      //delete synteticWindow.inspect;
+      console.log(`synteticWindow: `, synteticWindow);
+      console.log(`synteticDocument: `, synteticDocument);
+      var socket = io.connect();
+      socket.emit(`browser`, { synteticWindow, synteticDocument });
+</script>
+
+</html>
